@@ -5,12 +5,13 @@ WORKDIR /go/src/gitlab.com/middlewaregruppen/container-demo
 COPY ./ .
 
 RUN go get -d -v  ./... && \
-CGO_ENABLED=0 GOOS=linux go build -o ./bin/noster-api ./cmd/noster-api
+CGO_ENABLED=0 GOOS=linux go build -o ./bin/demo ./cmd/demo
 
 FROM scratch
 
-COPY --from=build-env /go/src/gitlab.com/middlewaregruppen/continer-demo/bin/main ./
+COPY --from=build-env /go/src/gitlab.com/middlewaregruppen/container-demo/bin/demo ./
+COPY --from=build-env /go/src/gitlab.com/middlewaregruppen/container-demo/ui ./ui
 
 EXPOSE 8080
 
-CMD ["./main"]
+CMD ["./demo"]

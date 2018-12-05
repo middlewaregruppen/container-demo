@@ -1,0 +1,8 @@
+FROM opensuse
+
+COPY ./out /opt/demo
+COPY ./ui /opt/demo/ui
+
+WORKDIR /opt/demo
+
+CMD ["/opt/demo/container-demo-linux-amd64"]
