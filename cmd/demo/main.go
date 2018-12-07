@@ -12,6 +12,9 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
+	"encoding/json"
 )
 
 var S *http.Server
@@ -30,6 +33,10 @@ func init() {
 	pflag.DurationVar(&startupTime, "boot-time", 1*time.Second, "time it takes to start up the service")
 	pflag.StringVar(&listen, "listen", ":8080", "http listen")
 
+}
+
+type Message struct {
+	Test string
 }
 
 func main() {
@@ -101,7 +108,116 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 
 		rw.Write([]byte("Letting /health time out from now on"))
 
+	case "fileinfo":
+		nofiles := 0
+		var size int64
+		var files []string
+		filepath.Walk("/", func(path string, info os.FileInfo, err error) error {
+
+			if strings.HasPrefix("/dev", path) {
+				return nil
+			}
+			if strings.HasPrefix("/proc", path) {
+				return nil
+			}
+
+			if err != nil {
+				return nil
+			}
+			files = append(files, info.Name())
+			nofiles++
+			size = size + info.Size()
+			return nil
+		})
+
+		res := fmt.Sprintf("Found %d files. Size: %d Mb", nofiles, size/1024/1024)
+
+		rw.Write([]byte(res))
+
+	case "log100":
+		lines := 100
+		start := time.Now()
+		for i :=0; i <lines ; i++ {
+			log.Printf("Logging a lot: %d ", i)
+
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("Logged %d lines in %.2f seconds", lines, d.Seconds())
+
+		rw.Write([]byte(res))
+
+
+	case "log1000":
+		lines := 1000
+		start := time.Now()
+		for i :=0; i <lines ; i++ {
+			log.Printf("Logging a lot: %d ", i)
+
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("Logged %d lines in %.2f seconds", lines, d.Seconds())
+
+		rw.Write([]byte(res))
+
+	case "log10000":
+		lines := 10000
+		start := time.Now()
+		for i :=0; i <lines ; i++ {
+			log.Printf("Logging a lot: %d ", i)
+
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("Logged %d lines in %.2f seconds", lines, d.Seconds())
+
+		rw.Write([]byte(res))
+
+	case "cpusmall":
+		const testBytes = `{ "Test": "value" }`
+		iter := int64(700000)
+		start := time.Now()
+		p := &Message{}
+		for i := int64(1); i < iter; i++ {
+			json.NewDecoder(strings.NewReader(testBytes)).Decode(p)
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("[small]. Took %.2f seconds", d.Seconds())
+		rw.Write([]byte(res))
+
+
+
+	case "cpumedium":
+		const testBytes = `{ "Test": "value" }`
+		iter := int64(2000000)
+		start := time.Now()
+		p := &Message{}
+		for i := int64(1); i < iter; i++ {
+			json.NewDecoder(strings.NewReader(testBytes)).Decode(p)
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("[medium]. Took %.2f seconds", d.Seconds())
+		rw.Write([]byte(res))
+
+
+	case "cpularge":
+		const testBytes = `{ "Test": "value" }`
+		iter := int64(8000000)
+		start := time.Now()
+		p := &Message{}
+		for i := int64(1); i < iter; i++ {
+			json.NewDecoder(strings.NewReader(testBytes)).Decode(p)
+		}
+		d := time.Since(start)
+		res := fmt.Sprintf("[large]. Took %.2f seconds", d.Seconds())
+		rw.Write([]byte(res))
+
+
+
+
+
+
 	}
+
+
 
 }
 
