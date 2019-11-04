@@ -1,23 +1,43 @@
 package main
 
 import (
+	"context"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-lib/metrics"
 	"log"
 	"net/http"
 	"time"
 
-	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
-	"encoding/json"
 )
 
 var S *http.Server
+
+var (
+	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "ata_increase_me_clicks",
+		Help: "Times increase me link has been pressed",
+	})
+	gauge = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "ata_request_load",
+		Help: "Request Load",
+	})
+)
 
 var RespondToHealth bool
 
@@ -41,6 +61,34 @@ type Message struct {
 
 func main() {
 
+	// Recommended configuration for dev.
+	cfg := jaegercfg.Configuration{
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans: true,
+		}}
+
+	// Example logger and metrics factory. Use github.com/uber/jaeger-client-go/log
+	// and github.com/uber/jaeger-lib/metrics respectively to bind to real logging and metrics
+	// frameworks.
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+
+	// Initialize tracer with a logger and a metrics factory
+	closer, err := cfg.InitGlobalTracer(
+		"awesome",
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+	)
+	if err != nil {
+		log.Printf("Could not initialize jaeger tracer: %s", err.Error())
+		return
+	}
+	defer closer.Close()
+
 	log.Printf(`
    ___ _      ________  ___________  __  _______
   / _ | | /| / / __/  |/  / __/ __ \/  |/  / __/
@@ -59,6 +107,7 @@ func main() {
 	r.HandleFunc("/action/{action}", ActionHandler)
 	r.HandleFunc("/", InfoHandler)
 	r.HandleFunc("/health", HealthHandler)
+	r.Handle("/metrics", promhttp.Handler())
 
 	S = &http.Server{
 		Addr:           listen,
@@ -137,7 +186,7 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 	case "log100":
 		lines := 100
 		start := time.Now()
-		for i :=0; i <lines ; i++ {
+		for i := 0; i < lines; i++ {
 			log.Printf("Logging a lot: %d ", i)
 
 		}
@@ -146,11 +195,10 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 
 		rw.Write([]byte(res))
 
-
 	case "log1000":
 		lines := 1000
 		start := time.Now()
-		for i :=0; i <lines ; i++ {
+		for i := 0; i < lines; i++ {
 			log.Printf("Logging a lot: %d ", i)
 
 		}
@@ -162,7 +210,7 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 	case "log10000":
 		lines := 10000
 		start := time.Now()
-		for i :=0; i <lines ; i++ {
+		for i := 0; i < lines; i++ {
 			log.Printf("Logging a lot: %d ", i)
 
 		}
@@ -183,8 +231,6 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 		res := fmt.Sprintf("[small]. Took %.2f seconds", d.Seconds())
 		rw.Write([]byte(res))
 
-
-
 	case "cpumedium":
 		const testBytes = `{ "Test": "value" }`
 		iter := int64(2000000)
@@ -196,7 +242,6 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 		d := time.Since(start)
 		res := fmt.Sprintf("[medium]. Took %.2f seconds", d.Seconds())
 		rw.Write([]byte(res))
-
 
 	case "cpularge":
 		const testBytes = `{ "Test": "value" }`
@@ -210,14 +255,74 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 		res := fmt.Sprintf("[large]. Took %.2f seconds", d.Seconds())
 		rw.Write([]byte(res))
 
+	case "metrics-increase":
+		opsProcessed.Inc()
 
+		rw.Write([]byte("clicks has been increased"))
 
+	case "metrics-gauge-10":
+		gauge.Set(10)
+		rw.Write([]byte("ata_request_load set to 10"))
 
+	case "metrics-gauge-50":
+		gauge.Set(50)
+		rw.Write([]byte("ata_request_load set to 50"))
 
+	case "metrics-gauge-90":
+		gauge.Set(90)
+		rw.Write([]byte("ata_request_load set to 90"))
+
+	case "tracing-flow1":
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "awesome_business_function")
+		defer span.Finish()
+
+		time.Sleep(200 * time.Millisecond)
+
+		if !BusinessFunction(ctx) {
+
+			rw.Write([]byte("Request failed!"))
+
+		} else {
+			rw.Write([]byte("Request successful!"))
+		}
 
 	}
 
+}
 
+func BusinessFunction(ctx context.Context) bool {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "fetching_data")
+	defer span.Finish()
+	time.Sleep(100 * time.Millisecond)
+
+	rand.Int()
+	if rand.Intn(3) < 2 {
+		span.SetTag("db.host", "dbserver1.middleware.se")
+		re := rand.Intn(3)
+		a := time.Duration(re)
+		time.Sleep(a * time.Second)
+
+		span.SetTag("db.records.retrieved", re*100)
+
+		span2, _ := opentracing.StartSpanFromContext(ctx, "api_call")
+		span2.SetTag("api.endpoint", "api.middleware.se")
+
+		rea := rand.Intn(3)
+		aa := time.Duration(rea)
+
+		time.Sleep(aa * time.Millisecond * 100)
+		span2.SetTag("api.response", 200)
+
+		return true
+	}
+
+	span.SetTag("db.host", "dbserver2.middleware.se")
+	span.SetTag("error", true)
+	a := time.Duration(rand.Intn(4))
+	time.Sleep(a * time.Second)
+
+	return false
 
 }
 

@@ -13,6 +13,10 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700%7CRubik:300,400,500" rel="stylesheet" type="text/css">
     <link href="/ui/css/font-rubiklato.css" rel="stylesheet" type="text/css">
 
+    <style>
+        a {cursor: pointer;}
+    </style>
+
     <script>
 
         function doAction(action, status) {
@@ -37,19 +41,19 @@
 
 
 </head>
-<body data-smooth-scroll-offset="77">
-<div class="nav-container"> </div>
+<body >
 <div class="main-container">
-    <section class="cover cover-features imagebg space--lg" data-overlay="5">
+    <section class="cover cover-features imagebg space--md" data-overlay="5">
         <div class="background-image-holder"> <img alt="background" src="ui/img/pexels-photo-753331.jpeg"> </div>
         <div class="container">
             <div class="row">
                 <div class="col-md-9 col-lg-7">
-                    <h1> Container Test Application</h1>
-                    <p class="lead">Test the power of container schedulers</p>
+                    <h1> Awesome Application</h1>
+                    <p class="lead">Test everything</p>
                 </div>
             </div>
             <div class="row">
+
                 <div class="col-md-4">
                     <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Servers"></i>
                         <div class="feature__body">
@@ -67,46 +71,66 @@
                 <div class="col-md-4">
                     <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Stethoscope"></i>
                         <div class="feature__body">
-                            <p><a href="#" onclick="doAction('livenessoff', 's.liveness')">Stop</a> responding on <a href="/health">/health</a><br><span id="s.liveness"></span></p>
+                            <p><a onclick="doAction('livenessoff', 's.liveness')">Stop</a> responding on <a href="/health">/health</a><br><span id="s.liveness"></span></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Gaugage"></i>
                         <div class="feature__body">
-                            <p><a href="#" onclick="doAction('malloc20mb', 's.malloc')">Allocate</a> 20 MB of RAM <br><span id="s.malloc"></span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Death"></i>
-                        <div class="feature__body">
-                            <p><a href="#" onclick="doAction('kill', 's.kill')">Kill</a> this application<br><span id="s.kill"></span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Calculator-2"></i>
-                        <div class="feature__body">
-                            <p><a href="#" onclick="doAction('fileinfo', 's.fileinfo')">Calculate</a> Number of files and the size<br><span id="s.fileinfo"></span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Notepad"></i>
-                        <div class="feature__body">
-                            <p>Log <a href="#" onclick="doAction('log100', 's.loginfo')">100</a>, <a href="#" onclick="doAction('log1000', 's.loginfo')">1000</a> or <a href="#" onclick="doAction('log10000', 's.loginfo')">10 000</a> entries<br><span id="s.loginfo"></span></p>
+                            <p><a onclick="doAction('malloc20mb', 's.malloc')">Allocate</a> 20 MB of RAM <br><span id="s.malloc"></span></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-CPU"></i>
                         <div class="feature__body">
-                            <p>Load CPU <a href="#" onclick="doAction('cpusmall', 's.cpuinfo')">little</a>, <a href="#" onclick="doAction('cpumedium', 's.cpuinfo')">medium</a> or a <a href="#" onclick="doAction('cpularge', 's.cpuinfo')">lot</a>. <br><span id="s.cpuinfo"></span></p>
+                            <p>Load CPU <a onclick="doAction('cpusmall', 's.cpuinfo')">little</a>, <a onclick="doAction('cpumedium', 's.cpuinfo')">medium</a> or a <a onclick="doAction('cpularge', 's.cpuinfo')">lot</a>. <br><span id="s.cpuinfo"></span></p>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <div class="col-md-4">
+                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Death"></i>
+                        <div class="feature__body">
+                            <p><a onclick="doAction('kill', 's.kill')">Kill</a> this application<br><span id="s.kill"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Gay"></i>
+                        <div class="feature__body">
+                            <p>Metrics:  <a onclick="doAction('metrics-increase', 's.metrics')">Increase me!</a> <br/>
+                                Request load  <a  onclick="doAction('metrics-gauge-10', 's.metrics')">10</a>, <a onclick="doAction('metrics-gauge-50', 's.metrics')">50</a>, <a onclick="doAction('metrics-gauge-90', 's.metrics')">90 </a>
+                                <br><span id="s.metrics"></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Aim"></i>
+                        <div class="feature__body">
+                            <p>Tracing:  <a onclick="doAction('tracing-flow1', 's.tracing')">Buggy business function</a> <br/>
+                                <br><span id="s.tracing"></span> </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Calculator-2"></i>
+                        <div class="feature__body">
+                            <p><a onclick="doAction('fileinfo', 's.fileinfo')">Calculate</a> Number of files and the size<br><span id="s.fileinfo"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature feature-2 boxed boxed--border bg--white"> <i class="icon color--primary icon-Notepad"></i>
+                        <div class="feature__body">
+                            <p>Log <a onclick="doAction('log100', 's.loginfo')">100</a>, <a onclick="doAction('log1000', 's.loginfo')">1000</a> or <a onclick="doAction('log10000', 's.loginfo')">10 000</a> entries<br><span id="s.loginfo"></span></p>
+                        </div>
+                    </div>
+                </div>
         </div>
+        </div>
+
+
     </section>
 </div>
 <script src="/ui/js/jquery-3.1.1.min.js"></script>
