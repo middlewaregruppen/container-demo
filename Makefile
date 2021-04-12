@@ -1,11 +1,11 @@
 BINARY=container-demo
 GOARCH=amd64
-VERSION=1.0.0-alpha.1
+VERSION=1.16
 COMMIT=$(shell git rev-parse HEAD)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 GOVERSION=$(shell go version | awk -F\go '{print $$3}' | awk '{print $$1}')
 GITHUB_USERNAME=middlewaregruppen
-BUILD_DIR=${GOPATH}/src/gitlab.com/${GITHUB_USERNAME}/${BINARY}
+BUILD_DIR=.
 PKG_LIST=$$(go list ./... | grep -v /vendor/)
 # Setup the -ldflags option for go build here, interpolate the variable values
 LDFLAGS = -ldflags "-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -X main.GOVERSION=${GOVERSION}"
@@ -40,12 +40,12 @@ windows: dep
 
 docker_build:
 	docker run --rm -v "${PWD}":/go/src/gitlab.com/middlewaregruppen/container-demo -w /go/src/gitlab.com/middlewaregruppen/container-demo golang:${GOVERSION} make fmt test
-	docker build -t registry.gitlab.com/middlewaregruppen/container-demo:${VERSION} .
-	docker tag registry.gitlab.com/middlewaregruppen/container-demo:${VERSION} registry.gitlab.com/middlewaregruppen/container-demo:latest
+	docker build -t github.com/middlewaregruppen/container-demo:${VERSION} .
+	docker tag github.com/middlewaregruppen/container-demo:${VERSION} github.com/middlewaregruppen/container-demo:latest
 
 docker_push:
-	docker push registry.gitlab.com/middlewaregruppen/container-demo:${VERSION}
-	docker push registry.gitlab.com/middlewaregruppen/container-demo:latest
+	docker push github.com/middlewaregruppen/container-demo:${VERSION}
+	docker push github.com/middlewaregruppen/container-demo:latest
 
 docker: docker_build docker_push
 
