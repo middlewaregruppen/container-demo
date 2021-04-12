@@ -61,7 +61,7 @@ type Message struct {
 
 func main() {
 
-	flag.Parse()
+	pflag.Parse()
 	
 	// Recommended configuration for dev.
 	cfg := jaegercfg.Configuration{
