@@ -61,6 +61,8 @@ type Message struct {
 
 func main() {
 
+	flag.Parse()
+	
 	// Recommended configuration for dev.
 	cfg := jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
