@@ -132,7 +132,7 @@ func AuthHandler(rw http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	p := r.Form.Get("password")
 
-	secret, err := ioutil.ReadFile("/secret-password")
+	secret, err := ioutil.ReadFile("/secret-password/password")
 
 	if err != nil {
 
