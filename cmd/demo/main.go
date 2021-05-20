@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,9 +16,6 @@ import (
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
-	"log"
-	"net/http"
-	"time"
 
 	"encoding/json"
 	"fmt"
@@ -62,7 +63,7 @@ type Message struct {
 func main() {
 
 	pflag.Parse()
-	
+
 	// Recommended configuration for dev.
 	cfg := jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
@@ -109,6 +110,7 @@ func main() {
 	r.HandleFunc("/action/{action}", ActionHandler)
 	r.HandleFunc("/", InfoHandler)
 	r.HandleFunc("/health", HealthHandler)
+	r.HandleFunc("/authentication", AuthHandler)
 	r.Handle("/metrics", promhttp.Handler())
 
 	S = &http.Server{
@@ -122,6 +124,34 @@ func main() {
 	log.Printf("Started server")
 
 	log.Fatal(S.ListenAndServe())
+
+}
+
+func AuthHandler(rw http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+	p := r.Form.Get("password")
+
+	secret, err := ioutil.ReadFile("/secret-password")
+
+	if err != nil {
+
+		rw.Write([]byte("Can not find secret in /secret-password. Make sure it has been mounted"))
+	}
+
+	log.Printf("u: %s, p %s ", secret, p)
+
+	ss := fmt.Sprintf("%s", secret)
+
+	ss = strings.TrimSuffix(ss, "\n")
+
+	if ss == p {
+
+		rw.Write([]byte("<h1>You are authenticated</h1> Have fun!"))
+
+	} else {
+		rw.Write([]byte("<h1>You are not allowed to access this. Wrong Password.</h1> Are you trying to hxx0er me?"))
+	}
 
 }
 
