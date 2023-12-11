@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -26,6 +27,18 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+// VERSION is generated during compile as is never to be set here
+var VERSION string
+
+// COMMIT is the Git commit hash and is generated during compile as is never to be set here
+var COMMIT string
+
+// BRANCH is the Git branch name and is generated during compile as is never to be set here
+var BRANCH string
+
+// GOVERSION is the Go version used to compile and is generated during compile as is never to be set here
+var GOVERSION string
 
 var S *http.Server
 
@@ -62,7 +75,18 @@ type Message struct {
 
 func main() {
 
+	// Request app version
+	showver := pflag.Bool("version", false, "Print version")
+
+	// parse the CLI flags
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
+
+	// Show version if requested
+	if *showver {
+		fmt.Printf("Version: %s\nCommit: %s\nBranch: %s\nGoVersion: %s\n", VERSION, COMMIT, BRANCH, GOVERSION)
+		return
+	}
 
 	// Recommended configuration for dev.
 	cfg := jaegercfg.Configuration{

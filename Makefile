@@ -30,7 +30,7 @@ all: | $(BIN) ; $(info $(M) building executable to $(BUILDPATH)) @ ## Build prog
 	$Q $(GO) build \
 		-tags release \
 		-ldflags '-X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -X main.GOVERSION=${GOVERSION}' \
-		-o $(BUILDPATH) cmd/node-cert-exporter/main.go
+		-o $(BUILDPATH) cmd/demo/main.go
 
 .PHONY: docker_build
 docker_build: ; $(info $(M) building docker image) @ ## Build docker image
