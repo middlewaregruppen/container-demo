@@ -77,7 +77,7 @@ lint: | $(GOLINT) ; $(info $(M) running golint) @ ## Runs the golint command
 
 .PHONY: gocyclo
 gocyclo: | $(GOCYCLO) ; $(info $(M) running gocyclo) @ ## Calculates cyclomatic complexities of functions in Go source code
-	$Q $(GOCYCLO) -over 25 .
+	$Q $(GOCYCLO) .
 
 .PHONY: ineffassign
 ineffassign: | $(INEFFASSIGN) ; $(info $(M) running ineffassign) @ ## Detects ineffectual assignments in Go code
