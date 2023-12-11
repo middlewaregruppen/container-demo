@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -145,7 +144,7 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	log.Printf("Started server")
+	log.Printf("Started server at %s", S.Addr)
 
 	log.Fatal(S.ListenAndServe())
 
@@ -156,7 +155,7 @@ func AuthHandler(rw http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	p := r.Form.Get("password")
 
-	secret, err := ioutil.ReadFile("/secret-password/password")
+	secret, err := os.ReadFile("/secret-password/password")
 
 	if err != nil {
 
@@ -165,7 +164,7 @@ func AuthHandler(rw http.ResponseWriter, r *http.Request) {
 
 	log.Printf("u: %s, p %s ", secret, p)
 
-	ss := fmt.Sprintf("%s", secret)
+	ss := string(secret)
 
 	ss = strings.TrimSuffix(ss, "\n")
 
@@ -393,7 +392,7 @@ func InfoHandler(rw http.ResponseWriter, r *http.Request) {
 
 	i.ClientAddr = r.RemoteAddr
 
-	t, err := ioutil.ReadFile("ui/index.html")
+	t, err := os.ReadFile("ui/index.html")
 	if err != nil {
 		panic(err)
 	}
