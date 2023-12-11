@@ -27,21 +27,21 @@ import (
 	"strings"
 )
 
-// VERSION is generated during compile as is never to be set here
-var VERSION string
-
-// COMMIT is the Git commit hash and is generated during compile as is never to be set here
-var COMMIT string
-
-// BRANCH is the Git branch name and is generated during compile as is never to be set here
-var BRANCH string
-
-// GOVERSION is the Go version used to compile and is generated during compile as is never to be set here
-var GOVERSION string
-
-var S *http.Server
-
 var (
+	// VERSION is generated during compile as is never to be set here
+	VERSION string
+
+	// COMMIT is the Git commit hash and is generated during compile as is never to be set here
+	COMMIT string
+
+	// BRANCH is the Git branch name and is generated during compile as is never to be set here
+	BRANCH string
+
+	// GOVERSION is the Go version used to compile and is generated during compile as is never to be set here
+	GOVERSION string
+
+	s *http.Server
+
 	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "ata_increase_me_clicks",
 		Help: "Times increase me link has been pressed",
@@ -50,16 +50,15 @@ var (
 		Name: "ata_request_load",
 		Help: "Request Load",
 	})
-)
 
-var RespondToHealth bool
+	//
+	respondToHealth bool
 
-var (
 	startupTime time.Duration
 	listen      string
-)
 
-var Data [][]byte
+	data [][]byte
+)
 
 func init() {
 
@@ -68,6 +67,7 @@ func init() {
 
 }
 
+// Message is used to send data to frontends
 type Message struct {
 	Test string
 }
@@ -125,7 +125,7 @@ func main() {
 
 	time.Sleep(startupTime)
 
-	RespondToHealth = true
+	respondToHealth = true
 
 	r := mux.NewRouter()
 
@@ -136,7 +136,7 @@ func main() {
 	r.HandleFunc("/authentication", AuthHandler)
 	r.Handle("/metrics", promhttp.Handler())
 
-	S = &http.Server{
+	s = &http.Server{
 		Addr:           listen,
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
@@ -144,12 +144,13 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	log.Printf("Started server at %s", S.Addr)
+	log.Printf("Started server at %s", s.Addr)
 
-	log.Fatal(S.ListenAndServe())
+	log.Fatal(s.ListenAndServe())
 
 }
 
+// AuthHandler is an HTTP handler
 func AuthHandler(rw http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
@@ -178,6 +179,7 @@ func AuthHandler(rw http.ResponseWriter, r *http.Request) {
 
 }
 
+// ActionHandler is an HTTP handler
 func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -187,7 +189,7 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			time.Sleep(time.Second * 5)
-			S.Close()
+			s.Close()
 			panic("I just died in your arms tonight ")
 
 		}()
@@ -195,21 +197,20 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 		rw.Write([]byte("Application will be killed in 5 seconds"))
 
 	case "malloc20mb":
-		log.Printf("Allocating 20mb to existing %d Mb", len(Data)/2048*2)
+		log.Printf("Allocating 20mb to existing %d Mb", len(data)/2048*2)
 
 		for i := 0; i < 1024*20; i++ {
 			kb := make([]byte, 1024)
 			rand.Read(kb)
-			Data = append(Data, kb)
+			data = append(data, kb)
 		}
 
-		res := fmt.Sprintf("Allocated 20mb. Size now: %d Mb", len(Data)/2048*2)
+		res := fmt.Sprintf("Allocated 20mb. Size now: %d Mb", len(data)/2048*2)
 
 		rw.Write([]byte(res))
 
 	case "livenessoff":
-		RespondToHealth = false
-
+		respondToHealth = false
 		rw.Write([]byte("Letting /health time out from now on"))
 
 	case "fileinfo":
@@ -333,7 +334,7 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 
 		time.Sleep(200 * time.Millisecond)
 
-		if !BusinessFunction(ctx) {
+		if !businessFunction(ctx) {
 
 			rw.Write([]byte("Request failed!"))
 
@@ -345,7 +346,7 @@ func ActionHandler(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func BusinessFunction(ctx context.Context) bool {
+func businessFunction(ctx context.Context) bool {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "fetching_data")
 	defer span.Finish()
@@ -381,11 +382,13 @@ func BusinessFunction(ctx context.Context) bool {
 
 }
 
+// Info is a type that holds information about clients
 type Info struct {
 	Hostname   string `json:"hostname"`
 	ClientAddr string `json:"client"`
 }
 
+// InfoHandler is an HTTP handler
 func InfoHandler(rw http.ResponseWriter, r *http.Request) {
 	i := Info{}
 	i.Hostname, _ = os.Hostname()
@@ -409,11 +412,11 @@ func InfoHandler(rw http.ResponseWriter, r *http.Request) {
 
 }
 
+// HealthHandler is an HTTP handler
 func HealthHandler(rw http.ResponseWriter, r *http.Request) {
 
-	if !RespondToHealth {
+	if !respondToHealth {
 		time.Sleep(30 * time.Minute)
-
 	}
 
 	rw.Write([]byte("All good!"))
