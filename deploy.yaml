@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: container-demo
-        image: middlewaregruppen/container-demo
+        image: ghcr.io/middlewaregruppen/container-demo:latest
         resources:
           limits:
             memory: "128Mi"
