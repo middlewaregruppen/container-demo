@@ -46,10 +46,7 @@ $(TBIN):
 $(INTDIR):
 	@mkdir -p $@
 $(TBIN)/%: | $(TBIN) ; $(info $(M) building $(PACKAGE))
-	$Q tmp=$$(mktemp -d); \
-	   env GO111MODULE=off GOPATH=$$tmp GOBIN=$(TBIN) $(GO) get $(PACKAGE) \
-		|| ret=$$?; \
-	   rm -rf $$tmp ; exit $$ret
+	$Q GOBIN=$(TBIN) $(GO) install $(PACKAGE)@latest
 
 GOLINT = $(TBIN)/golint
 $(BIN)/golint: PACKAGE=golang.org/x/lint/golint
@@ -67,7 +64,7 @@ GOLINT = $(TBIN)/golint
 $(TBIN)/golint: PACKAGE=golang.org/x/lint/golint
 
 GOCOV = $(TBIN)/gocov
-$(TBIN)/gocov: PACKAGE=github.com/axw/gocov/...
+$(TBIN)/gocov: PACKAGE=github.com/axw/gocov
 
 # Tests
 
